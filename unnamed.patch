@@ -1,0 +1,52 @@
+Index: app/src/main/java/com/example/zukar/view/VistaLogin.kt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/app/src/main/java/com/example/zukar/view/VistaLogin.kt b/app/src/main/java/com/example/zukar/view/VistaLogin.kt
+--- a/app/src/main/java/com/example/zukar/view/VistaLogin.kt
++++ b/app/src/main/java/com/example/zukar/view/VistaLogin.kt	(date 1762329675530)
+@@ -1,6 +1,7 @@
+ package com.example.zukar.view
+ 
+ import LoginViewModel
++import UsuarioService
+ import android.widget.Toast
+ import androidx.compose.foundation.layout.Arrangement
+ import androidx.compose.foundation.layout.Column
+@@ -36,8 +37,12 @@
+ import androidx.compose.ui.text.input.KeyboardType
+ import androidx.compose.ui.text.input.PasswordVisualTransformation
+ import androidx.compose.ui.unit.dp
++import androidx.lifecycle.viewmodel.compose.viewModel
+ import com.example.zukar.controller.LoginState
+ import com.example.zukar.controller.LoginViewModel
++import com.example.zukar.controller.LoginViewModelFactory
++import com.example.zukar.db.ZukarDB
++import com.example.zukar.repository.UsuarioRepository
+ 
+ @OptIn(ExperimentalMaterial3Api::class)
+ @Composable
+@@ -48,11 +53,21 @@
+     onLoginSuccess: () -> Unit,
+     onNavigateToRegister: () -> Unit
+ ) {
++    val context = LocalContext.current
++    // Crear el service de retrofit
++    val usuarioService = RetrofitProvider.create<UsuarioService>()
++    // Obtener la base de datos local
++    val database = ZukarDB.get(context)
++    // Crear el repository con backend + bd local
++    val repository = UsuarioRepository(usuarioService, database)
++    // Crear el ViewModel usando la Factory
++    val viewModel: LoginViewModel = viewModel(
++        factory = LoginViewModelFactory(repository)
++    )
+     var correo by remember { mutableStateOf("") }
+     var pass by remember { mutableStateOf("") }
+     val loginState by viewModel.loginState.collectAsState()
+ 
+-    val context = LocalContext.current
+     LaunchedEffect(loginState) {
+         when (val state = loginState) {
+             is LoginState.Success -> {
